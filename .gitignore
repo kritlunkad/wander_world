@@ -1,0 +1,7 @@
+# Rich Text Files (RTF)
+*.rtf
+p.md.rtf
+
+# OS generated files
+.DS_Store
+Thumbs.db
