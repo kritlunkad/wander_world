@@ -160,7 +160,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 ## Sprint Roadmap (6-Day Plan)
 - [x] **Day 1 (K)**: Base server, Mongo connection, Package model, seed script, package endpoints.
 - [x] **Day 2 (H)**: Vite React app, router, Navbar/Footer, Package list & detail pages (real API integration, loading & error states).
-- [ ] **Day 3 (A)**: Auth (User, JWT, bcrypt), booking model & endpoints.
+- [x] **Day 3 (A)**: Auth (User, JWT, bcrypt), booking model & endpoints.
 - [ ] **Day 4 (K)**: Auth UI, ProtectedRoute, Booking form & My Bookings.
 - [ ] **Day 5 (H)**: Admin package management (CRUD), search and filter.
 - [ ] **Day 6 (A)**: Responsive UI, 404 page, polish, deployment (Atlas, Render/Railway, Vercel/Netlify).
