@@ -3,6 +3,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const packageRoutes = require('./routes/packageRoutes');
+const authRoutes = require('./routes/authRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 // Load environment variables
@@ -38,6 +40,8 @@ app.get('/api/health', (req, res) => {
 
 // Mount Resource Routes
 app.use('/api/packages', packageRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 // Error Handling Middlewares
 app.use(notFound);
