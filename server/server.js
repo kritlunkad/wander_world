@@ -1,14 +1,20 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const dotenv = require('dotenv');
+
+// Load environment variables from server/.env, fallback to root .env
+dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config(); // Fallback if launched from root
+
+// Ensure JWT_SECRET fallback in local development
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'wander_world_jwt_secret_dev_key';
+
 const connectDB = require('./config/db');
 const packageRoutes = require('./routes/packageRoutes');
 const authRoutes = require('./routes/authRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
-
-// Load environment variables
-dotenv.config();
 
 // Connect to MongoDB
 connectDB();
