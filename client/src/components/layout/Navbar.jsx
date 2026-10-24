@@ -56,6 +56,18 @@ const Navbar = () => {
                 </NavLink>
               </li>
             )}
+            {isAuthenticated && user?.role === 'admin' && (
+              <li>
+                <NavLink
+                  to="/admin/packages"
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                  id="nav-link-admin-packages"
+                  style={{ color: 'var(--accent-cyan)' }}
+                >
+                  Manage Packages
+                </NavLink>
+              </li>
+            )}
           </ul>
         </nav>
 

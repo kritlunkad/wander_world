@@ -19,21 +19,30 @@ wander_world/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── common/
+│   │   │   │   ├── ProtectedRoute.jsx # Route protection (user & adminOnly)
 │   │   │   │   └── StatusStates.jsx  # Loading & error status components
 │   │   │   ├── layout/
 │   │   │   │   ├── Footer.jsx        # App footer
 │   │   │   │   ├── Layout.jsx        # Root layout with header/outlet/footer
-│   │   │   │   └── Navbar.jsx        # Navigation bar
+│   │   │   │   └── Navbar.jsx        # Navigation bar with role-based links
 │   │   │   └── packages/
 │   │   │       └── PackageCard.jsx   # Tour package card item
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx       # Authentication & user state context
 │   │   ├── pages/
+│   │   │   ├── AdminPackages.jsx     # Admin package management (Add, Edit, Delete)
 │   │   │   ├── Home.jsx              # Landing page with hero & featured packages
+│   │   │   ├── Login.jsx             # User login
+│   │   │   ├── MyBookings.jsx        # User booked tours
 │   │   │   ├── PackageDetail.jsx     # Full itinerary & detail view with booking sidebar
-│   │   │   └── Packages.jsx          # Catalog of all packages
+│   │   │   ├── Packages.jsx          # Catalog with destination & maxPrice search/filter
+│   │   │   └── Register.jsx          # User registration
 │   │   ├── services/
-│   │   │   ├── api.js                # Configured Axios instance (VITE_API_URL)
-│   │   │   └── packageService.js     # API handlers for packages
-│   │   ├── App.jsx                   # Route declarations
+│   │   │   ├── api.js                # Configured Axios instance (VITE_API_URL + Auth interceptors)
+│   │   │   ├── authService.js        # Auth API endpoints (login, register, me)
+│   │   │   ├── bookingService.js     # Booking API endpoints
+│   │   │   └── packageService.js     # API handlers for packages (List, Detail, Create, Update, Delete)
+│   │   ├── App.jsx                   # Route declarations & ProtectedRoute wrappers
 │   │   ├── index.css                 # Global styles & design system tokens
 │   │   └── main.jsx                  # React entry point with BrowserRouter
 │   ├── .env.example                  # Frontend env template
@@ -44,13 +53,20 @@ wander_world/
 │   ├── config/
 │   │   └── db.js                     # MongoDB connection
 │   ├── controllers/
-│   │   └── packageController.js       # Route handler logic
+│   │   ├── authController.js         # User registration, login, profile logic
+│   │   ├── bookingController.js      # Booking creation & retrieval logic
+│   │   └── packageController.js       # Package CRUD & query logic
 │   ├── middleware/
+│   │   ├── auth.js                   # protect & isAdmin middlewares
 │   │   └── errorHandler.js           # Centralized error & 404 handler
 │   ├── models/
-│   │   └── Package.js                # Mongoose Package schema & model
+│   │   ├── Booking.js                # Mongoose Booking schema & model
+│   │   ├── Package.js                # Mongoose Package schema & model
+│   │   └── User.js                   # Mongoose User schema with bcrypt & roles
 │   ├── routes/
-│   │   └── packageRoutes.js          # Express route definitions
+│   │   ├── authRoutes.js             # Express auth routes
+│   │   ├── bookingRoutes.js          # Express booking routes
+│   │   └── packageRoutes.js          # Express package routes (public & admin CRUD)
 │   ├── .env.example                  # Backend env template
 │   ├── package.json                  # Server dependencies & scripts
 │   ├── seed.js                       # Database seeding script (8 packages)
@@ -82,6 +98,7 @@ PORT=5001
 NODE_ENV=development
 MONGO_URI=mongodb://localhost:27017/wander_world
 CLIENT_URL=http://localhost:5173
+JWT_SECRET=wander_world_jwt_secret_dev_key
 ```
 *(Note: Port 5001 is used by default because macOS reserves port 5000 for AirPlay Receiver).*
 
@@ -130,13 +147,29 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---
 
-## API Endpoints (Day 1)
+## API Endpoints
 
-| Method | Endpoint | Description | Query Params |
-|--------|----------|-------------|--------------|
-| `GET`  | `/api/health` | Health check & server status | None |
-| `GET`  | `/api/packages` | Fetch all packages | `?destination=`, `?maxPrice=` |
-| `GET`  | `/api/packages/:id` | Fetch single package details | None |
+### Packages
+| Method | Endpoint | Description | Auth / Role | Query Params |
+|--------|----------|-------------|-------------|--------------|
+| `GET`  | `/api/packages` | Fetch all packages | Public | `?destination=`, `?maxPrice=` |
+| `GET`  | `/api/packages/:id` | Fetch single package details | Public | None |
+| `POST` | `/api/packages` | Create a new package | `Private / Admin` (`isAdmin`) | None |
+| `PUT`  | `/api/packages/:id` | Update an existing package | `Private / Admin` (`isAdmin`) | None |
+| `DELETE` | `/api/packages/:id` | Delete a package | `Private / Admin` (`isAdmin`) | None |
+
+### Authentication
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/api/auth/register` | Register a new user | Public |
+| `POST` | `/api/auth/login` | Log in and receive JWT token | Public |
+| `GET`  | `/api/auth/me` | Get current authenticated user | `Private` |
+
+### Bookings
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/api/bookings` | Create a new booking for a package | `Private` |
+| `GET`  | `/api/bookings/my` | Retrieve bookings for logged-in user | `Private` |
 
 ### Standard Response Format
 - **Success**:
@@ -161,6 +194,6 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 - [x] **Day 1 (K)**: Base server, Mongo connection, Package model, seed script, package endpoints.
 - [x] **Day 2 (H)**: Vite React app, router, Navbar/Footer, Package list & detail pages (real API integration, loading & error states).
 - [x] **Day 3 (A)**: Auth (User, JWT, bcrypt), booking model & endpoints.
-- [ ] **Day 4 (K)**: Auth UI, ProtectedRoute, Booking form & My Bookings.
-- [ ] **Day 5 (H)**: Admin package management (CRUD), search and filter.
+- [x] **Day 4 (K)**: Auth UI, ProtectedRoute, Booking form & My Bookings.
+- [x] **Day 5 (H)**: Admin package management (CRUD: POST/PUT/DELETE, modal form, table), search and filter by destination and maxPrice (`?destination=&maxPrice=`).
 - [ ] **Day 6 (A)**: Responsive UI, 404 page, polish, deployment (Atlas, Render/Railway, Vercel/Netlify).

@@ -34,4 +34,14 @@ const authorize = (...roles) => {
   };
 };
 
-module.exports = { protect, authorize };
+const isAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: "Admin resource. Access denied",
+    });
+  }
+  next();
+};
+
+module.exports = { protect, authorize, isAdmin };
