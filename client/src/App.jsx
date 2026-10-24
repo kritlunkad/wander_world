@@ -8,6 +8,7 @@ import PackageDetail from './pages/PackageDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import MyBookings from './pages/MyBookings';
+import AdminPackages from './pages/AdminPackages';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 function App() {
@@ -26,11 +27,17 @@ function App() {
             <Route path="my-bookings" element={<MyBookings />} />
           </Route>
 
+          {/* Admin Protected Routes */}
+          <Route element={<ProtectedRoute adminOnly />}>
+            <Route path="admin/packages" element={<AdminPackages />} />
+          </Route>
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
     </AuthProvider>
   );
 }
+
 
 export default App;
