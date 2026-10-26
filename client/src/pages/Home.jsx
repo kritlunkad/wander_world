@@ -40,7 +40,7 @@ const Home = () => {
         <div className="container">
           <div className="hero-badge">
             <Sparkles size={14} />
-            <span>Curated Tourism Sprint — Day 2</span>
+            <span>Premium Travel Experiences</span>
           </div>
 
           <h1 className="hero-title">
