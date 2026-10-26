@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Compass, Heart, Globe, Shield, Mail } from 'lucide-react';
+import { Compass } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -22,7 +22,7 @@ const Footer = () => {
           </div>
 
           <div className="footer-col">
-            <h4>Quick Links</h4>
+            <h4>Explore</h4>
             <ul className="footer-links">
               <li><Link to="/">Home</Link></li>
               <li><Link to="/packages">All Packages</Link></li>
@@ -41,12 +41,11 @@ const Footer = () => {
           </div>
 
           <div className="footer-col">
-            <h4>Sprint Status</h4>
+            <h4>Account</h4>
             <ul className="footer-links">
-              <li><span style={{ color: '#38bdf8' }}>✓ Day 1: API & Database</span></li>
-              <li><span style={{ color: '#10b981' }}>● Day 2: Client & Packages</span></li>
-              <li><span style={{ color: '#64748b' }}>○ Day 3: Auth & Booking</span></li>
-              <li><span style={{ color: '#64748b' }}>○ Day 4: Booking UI</span></li>
+              <li><Link to="/login">Sign In</Link></li>
+              <li><Link to="/register">Create Account</Link></li>
+              <li><Link to="/my-bookings">My Bookings</Link></li>
             </ul>
           </div>
         </div>

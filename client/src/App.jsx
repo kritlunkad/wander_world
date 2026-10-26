@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
@@ -10,6 +10,7 @@ import Register from './pages/Register';
 import MyBookings from './pages/MyBookings';
 import AdminPackages from './pages/AdminPackages';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -32,7 +33,7 @@ function App() {
             <Route path="admin/packages" element={<AdminPackages />} />
           </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </AuthProvider>

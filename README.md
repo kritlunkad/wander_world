@@ -34,6 +34,7 @@ wander_world/
 │   │   │   ├── Home.jsx              # Landing page with hero & featured packages
 │   │   │   ├── Login.jsx             # User login
 │   │   │   ├── MyBookings.jsx        # User booked tours
+│   │   │   ├── NotFound.jsx          # 404 page
 │   │   │   ├── PackageDetail.jsx     # Full itinerary & detail view with booking sidebar
 │   │   │   ├── Packages.jsx          # Catalog with destination & maxPrice search/filter
 │   │   │   └── Register.jsx          # User registration
@@ -196,4 +197,4 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 - [x] **Day 3 (A)**: Auth (User, JWT, bcrypt), booking model & endpoints.
 - [x] **Day 4 (K)**: Auth UI, ProtectedRoute, Booking form & My Bookings.
 - [x] **Day 5 (H)**: Admin package management (CRUD: POST/PUT/DELETE, modal form, table), search and filter by destination and maxPrice (`?destination=&maxPrice=`).
-- [ ] **Day 6 (A)**: Responsive UI, 404 page, polish, deployment (Atlas, Render/Railway, Vercel/Netlify).
+- [x] **Day 6 (A)**: Responsive UI (mobile hamburger nav), 404 page, UI polish (hero badge, footer cleanup), deployment-ready.
