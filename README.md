@@ -1,4 +1,4 @@
-# Wander World 🌍✈️
+# Wander World 
 
 Wander World is a full-stack tourism package booking web application built across a collaborative 6-day sprint.
 
