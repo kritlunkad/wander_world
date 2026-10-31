@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Package, Search, DollarSign, RotateCcw } from 'lucide-react';
+import { Search, DollarSign, RotateCcw, SlidersHorizontal, MapPin } from 'lucide-react';
 import { getPackages } from '../services/packageService';
 import PackageCard from '../components/packages/PackageCard';
 import { LoadingState, ErrorState } from '../components/common/StatusStates';
@@ -60,110 +60,89 @@ const Packages = () => {
   const hasActiveFilters = Boolean(filters.destination || filters.maxPrice);
 
   return (
-    <div className="packages-page" style={{ padding: '2.5rem 0 5rem' }}>
-      <div className="container">
-        {/* Header */}
-        <div className="section-header" style={{ marginBottom: '2rem' }}>
-          <div>
-            <div className="hero-badge" style={{ marginBottom: '0.75rem' }}>
-              <Package size={14} />
-              <span>Catalog & Itineraries</span>
-            </div>
-            <h1 className="section-title">Explore All Tour Packages</h1>
-            <p className="section-subtitle">
-              Browse authentic packages loaded with immersive day-by-day itineraries.
-            </p>
-          </div>
-          <div style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-            Showing <strong>{packages.length}</strong> {packages.length === 1 ? 'package' : 'packages'}
-          </div>
+    <div>
+      {/* Editorial Header Bar */}
+      <section className="catalog-header-bar">
+        <div className="container">
+          <span className="tag-badge" style={{ marginBottom: '0.75rem' }}>CURATED ITINERARIES</span>
+          <h1 style={{ fontSize: '2.75rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>
+            Journeys & Travel Packages
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', maxWidth: '640px' }}>
+            Explore immersive multi-day expeditions, handpicked lodgings, and authentic cultural journeys across the globe.
+          </p>
         </div>
+      </section>
 
-        {/* Search & Filter Bar */}
-        <div className="packages-filter-bar" style={{ marginBottom: '2.5rem' }}>
-          <form onSubmit={handleSearchSubmit} className="filter-form">
-            <div className="filter-input-group">
-              <Search size={18} className="filter-icon" />
+      {/* Main Content Area */}
+      <div className="container" style={{ paddingTop: '2.5rem' }}>
+        {/* Aventra Sharp Filter Strip */}
+        <form onSubmit={handleSearchSubmit} className="filter-strip-card">
+          <div className="filter-inputs-group">
+            {/* Destination Search */}
+            <div className="filter-input-box">
+              <MapPin size={16} color="var(--text-muted)" />
               <input
                 type="text"
-                className="filter-input"
-                id="filter-destination"
-                placeholder="Search by destination (e.g. Bali, Swiss, Japan)..."
+                placeholder="Search destination (e.g. Japan, Italy, Bali)..."
                 value={destinationInput}
                 onChange={(e) => setDestinationInput(e.target.value)}
               />
             </div>
 
-            <div className="filter-input-group filter-price-group">
-              <DollarSign size={18} className="filter-icon" />
+            {/* Max Budget Search */}
+            <div className="filter-input-box">
+              <DollarSign size={16} color="var(--text-muted)" />
               <input
                 type="number"
+                placeholder="Maximum budget (USD)..."
                 min="0"
-                step="50"
-                className="filter-input"
-                id="filter-max-price"
-                placeholder="Max price (USD)"
+                step="100"
                 value={maxPriceInput}
                 onChange={(e) => setMaxPriceInput(e.target.value)}
               />
             </div>
 
-            <button type="submit" className="btn-primary filter-submit-btn" id="filter-submit-btn">
-              <span>Apply Filters</span>
+            <button type="submit" className="btn-black" style={{ padding: '0.65rem 1.4rem' }}>
+              <Search size={15} />
+              <span>Filter Results</span>
             </button>
 
             {hasActiveFilters && (
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="btn-secondary filter-reset-btn"
-                id="filter-reset-btn"
-                title="Reset filters"
+                className="btn-white"
+                style={{ padding: '0.65rem 1.15rem' }}
               >
-                <RotateCcw size={16} />
+                <RotateCcw size={14} />
                 <span>Reset</span>
               </button>
             )}
-          </form>
+          </div>
 
-          {hasActiveFilters && (
-            <div className="active-filter-tags">
-              <span className="filter-tag-label">Active filters:</span>
-              {filters.destination && (
-                <span className="filter-tag">
-                  Destination: <strong>"{filters.destination}"</strong>
-                </span>
-              )}
-              {filters.maxPrice && (
-                <span className="filter-tag">
-                  Max Price: <strong>${Number(filters.maxPrice).toLocaleString()}</strong>
-                </span>
-              )}
-            </div>
-          )}
-        </div>
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+            Showing <strong>{packages.length}</strong> {packages.length === 1 ? 'Expedition' : 'Expeditions'}
+          </div>
+        </form>
 
-        {/* Loading / Error / Grid States */}
+        {/* Content Body / States */}
         {loading ? (
-          <LoadingState message="Loading packages..." />
+          <LoadingState message="Fetching expeditions..." />
         ) : error ? (
           <ErrorState message={error} onRetry={() => fetchFilteredPackages(filters)} />
         ) : packages.length === 0 ? (
-          <div className="state-container">
-            <h3 className="state-title">No matching packages found</h3>
-            <p className="state-desc">
-              {hasActiveFilters
-                ? 'Try adjusting your destination keyword or increasing the maximum price.'
-                : 'Please ensure the database has been seeded with packages.'}
+          <div className="state-container" style={{ background: '#fff', border: '1px solid var(--border-light)', margin: '2rem 0' }}>
+            <h3 className="state-title">No Journeys Match Your Criteria</h3>
+            <p className="state-desc" style={{ marginBottom: '1.5rem' }}>
+              We could not find any available itineraries matching your active destination or budget filter.
             </p>
-            {hasActiveFilters && (
-              <button onClick={handleResetFilters} className="btn-secondary" style={{ marginTop: '1rem' }}>
-                Clear Filters
-              </button>
-            )}
+            <button onClick={handleResetFilters} className="btn-black">
+              View All Expeditions
+            </button>
           </div>
         ) : (
-          <div className="packages-grid">
+          <div className="packages-cards-grid">
             {packages.map((pkg) => (
               <PackageCard key={pkg._id} pkg={pkg} />
             ))}
@@ -175,4 +154,3 @@ const Packages = () => {
 };
 
 export default Packages;
-

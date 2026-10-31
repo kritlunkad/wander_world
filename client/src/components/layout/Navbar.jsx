@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Compass, Sparkles, LogIn, LogOut, User, CalendarCheck, Menu, X } from 'lucide-react';
+import { LogIn, LogOut, User, CalendarCheck, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import odysseyLogo from '../../assets/odyssey-logo.svg';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -17,46 +18,47 @@ const Navbar = () => {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <header className="navbar">
-      <div className="container navbar-inner">
-        <Link to="/" className="brand-logo" id="nav-brand-logo" onClick={closeMenu}>
-          <div className="brand-icon-wrapper">
-            <Compass size={22} />
-          </div>
-          <div className="brand-text">
-            Wander<span>World</span>
-          </div>
+    <header className="aventra-header">
+      <div className="container nav-container">
+        {/* Brand / Odyssey Logo */}
+        <Link to="/" className="nav-brand" id="nav-brand-logo" onClick={closeMenu} style={{ textDecoration: 'none' }}>
+          <img
+            src={odysseyLogo}
+            alt="Odyssey Travels & Expeditions"
+            style={{ height: '38px', width: 'auto', display: 'block' }}
+          />
         </Link>
 
+        {/* Center Nav Links */}
         <nav>
-          <ul className="nav-links">
+          <ul className="nav-links-center">
             <li>
               <NavLink
                 to="/"
                 end
-                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                className={({ isActive }) => `nav-item-link ${isActive ? 'active' : ''}`}
                 id="nav-link-home"
               >
-                Home
+                Discover
               </NavLink>
             </li>
             <li>
               <NavLink
                 to="/packages"
-                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                className={({ isActive }) => `nav-item-link ${isActive ? 'active' : ''}`}
                 id="nav-link-packages"
               >
-                Packages
+                Journeys & Expeditions
               </NavLink>
             </li>
             {isAuthenticated && (
               <li>
                 <NavLink
                   to="/my-bookings"
-                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                  className={({ isActive }) => `nav-item-link ${isActive ? 'active' : ''}`}
                   id="nav-link-my-bookings"
                 >
-                  <CalendarCheck size={16} style={{ display: 'inline', verticalAlign: '-2px', marginRight: '4px' }} />
+                  <CalendarCheck size={15} style={{ display: 'inline', marginRight: '5px' }} />
                   My Bookings
                 </NavLink>
               </li>
@@ -65,10 +67,11 @@ const Navbar = () => {
               <li>
                 <NavLink
                   to="/admin/packages"
-                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                  className={({ isActive }) => `nav-item-link ${isActive ? 'active' : ''}`}
                   id="nav-link-admin-packages"
-                  style={{ color: 'var(--accent-cyan)' }}
+                  style={{ color: 'var(--color-black)', fontWeight: '700' }}
                 >
+                  <ShieldAlert size={15} style={{ display: 'inline', marginRight: '5px' }} />
                   Manage Packages
                 </NavLink>
               </li>
@@ -76,87 +79,38 @@ const Navbar = () => {
           </ul>
         </nav>
 
-        <div className="nav-actions">
+        {/* Right CTA / Auth Actions */}
+        <div className="nav-actions-right">
           {isAuthenticated ? (
-            <div className="nav-user-group">
-              <div className="nav-user-badge" title={`Signed in as ${user?.email || user?.name}`}>
-                <div className="nav-user-avatar">
-                  <User size={15} />
-                </div>
-                <span className="nav-user-name">{user?.name?.split(' ')[0] || 'User'}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div className="user-badge-nav">
+                <User size={15} />
+                <span>{user?.name || user?.email}</span>
               </div>
               <button
-                type="button"
                 onClick={handleLogout}
-                className="nav-logout-btn"
-                id="nav-logout-btn"
-                title="Log Out"
+                className="btn-white"
+                id="logout-btn"
+                style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}
+                title="Log out"
               >
-                <LogOut size={16} />
-                <span>Logout</span>
+                <LogOut size={14} />
+                <span>Sign Out</span>
               </button>
             </div>
           ) : (
-            <div className="nav-auth-buttons">
-              <Link to="/login" className="nav-login-link" id="nav-login-btn">
-                <LogIn size={16} />
-                <span>Log In</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Link to="/login" className="btn-white" style={{ padding: '0.55rem 1.15rem' }}>
+                <LogIn size={15} />
+                <span>Sign In</span>
               </Link>
-              <Link to="/register" className="nav-signup-btn" id="nav-register-btn">
-                <span>Sign Up</span>
+              <Link to="/packages" className="btn-black" style={{ padding: '0.55rem 1.25rem' }}>
+                <span>Book a trip</span>
               </Link>
             </div>
           )}
-
-          <Link to="/packages" className="nav-cta-btn nav-cta-desktop" id="nav-explore-btn">
-            <Sparkles size={16} />
-            <span>Explore Tours</span>
-          </Link>
-
-          <button
-            type="button"
-            className="hamburger-btn"
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          >
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
         </div>
       </div>
-
-      {menuOpen && (
-        <div className="mobile-menu">
-          <nav className="mobile-nav">
-            <NavLink to="/" end className={({ isActive }) => `mobile-nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>Home</NavLink>
-            <NavLink to="/packages" className={({ isActive }) => `mobile-nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>Packages</NavLink>
-            {isAuthenticated && (
-              <NavLink to="/my-bookings" className={({ isActive }) => `mobile-nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu}>My Bookings</NavLink>
-            )}
-            {isAuthenticated && user?.role === 'admin' && (
-              <NavLink to="/admin/packages" className={({ isActive }) => `mobile-nav-link ${isActive ? 'active' : ''}`} onClick={closeMenu} style={{ color: 'var(--accent-cyan)' }}>Manage Packages</NavLink>
-            )}
-
-            <div className="mobile-menu-divider" />
-
-            {isAuthenticated ? (
-              <button type="button" onClick={handleLogout} className="mobile-nav-link mobile-logout">
-                <LogOut size={16} />
-                <span>Logout ({user?.name?.split(' ')[0]})</span>
-              </button>
-            ) : (
-              <>
-                <Link to="/login" className="mobile-nav-link" onClick={closeMenu}>
-                  <LogIn size={16} />
-                  <span>Log In</span>
-                </Link>
-                <Link to="/register" className="mobile-nav-link mobile-signup" onClick={closeMenu}>
-                  <span>Sign Up Free</span>
-                </Link>
-              </>
-            )}
-          </nav>
-        </div>
-      )}
     </header>
   );
 };

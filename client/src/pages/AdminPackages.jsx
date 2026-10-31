@@ -12,8 +12,7 @@ import {
   Clock,
   Users,
   MapPin,
-  Image as ImageIcon,
-  Sparkles
+  Image as ImageIcon
 } from 'lucide-react';
 import { getPackages, createPackage, updatePackage, deletePackage } from '../services/packageService';
 import { LoadingState, ErrorState } from '../components/common/StatusStates';
@@ -28,8 +27,8 @@ const initialFormState = {
   difficulty: 'Moderate',
   image: '',
   featured: false,
-  included: 'Accommodation, Guided tours, Select meals, Local transportation',
-  excluded: 'International flights, Personal travel insurance, Optional activities',
+  included: 'Luxury boutique accommodation, Private transportation, Daily breakfasts, Certified historian tour guide',
+  excluded: 'International flights, Personal travel insurance, Discretionary gratuities',
 };
 
 const AdminPackages = () => {
@@ -58,7 +57,7 @@ const AdminPackages = () => {
       }
     } catch (err) {
       console.error('Error fetching admin package list:', err);
-      setError(err.response?.data?.message || 'Failed to load packages for administration.');
+      setError(err.response?.data?.message || 'Failed to retrieve package catalog.');
     } finally {
       setLoading(false);
     }
@@ -68,14 +67,14 @@ const AdminPackages = () => {
     fetchPackageList();
   }, []);
 
-  const openCreateModal = () => {
+  const handleOpenCreateModal = () => {
     setEditingPackageId(null);
     setFormData(initialFormState);
     setFormError(null);
     setIsModalOpen(true);
   };
 
-  const openEditModal = (pkg) => {
+  const handleOpenEditModal = (pkg) => {
     setEditingPackageId(pkg._id);
     setFormData({
       title: pkg.title || '',
@@ -87,15 +86,14 @@ const AdminPackages = () => {
       difficulty: pkg.difficulty || 'Moderate',
       image: pkg.image || '',
       featured: Boolean(pkg.featured),
-      included: Array.isArray(pkg.included) ? pkg.included.join(', ') : (pkg.included || ''),
-      excluded: Array.isArray(pkg.excluded) ? pkg.excluded.join(', ') : (pkg.excluded || ''),
+      included: Array.isArray(pkg.included) ? pkg.included.join(', ') : pkg.included || '',
+      excluded: Array.isArray(pkg.excluded) ? pkg.excluded.join(', ') : pkg.excluded || '',
     });
     setFormError(null);
     setIsModalOpen(true);
   };
 
-  const closeModal = () => {
-    if (formSubmitting) return;
+  const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingPackageId(null);
     setFormData(initialFormState);
@@ -113,146 +111,94 @@ const AdminPackages = () => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setFormError(null);
-    setFormSubmitting(true);
+
+    if (!formData.title || !formData.destination || !formData.description || !formData.price || !formData.duration || !formData.image) {
+      setFormError('Please fill out all required fields.');
+      return;
+    }
 
     try {
-      // Parse payload
+      setFormSubmitting(true);
       const payload = {
-        title: formData.title.trim(),
-        destination: formData.destination.trim(),
-        description: formData.description.trim(),
+        ...formData,
         price: Number(formData.price),
         duration: Number(formData.duration),
-        maxGroupSize: Number(formData.maxGroupSize) || 12,
-        difficulty: formData.difficulty,
-        image: formData.image.trim(),
-        featured: Boolean(formData.featured),
-        included: formData.included
-          ? formData.included.split(',').map((s) => s.trim()).filter(Boolean)
-          : [],
-        excluded: formData.excluded
-          ? formData.excluded.split(',').map((s) => s.trim()).filter(Boolean)
-          : [],
+        maxGroupSize: Number(formData.maxGroupSize),
+        included: formData.included.split(',').map((s) => s.trim()).filter(Boolean),
+        excluded: formData.excluded.split(',').map((s) => s.trim()).filter(Boolean),
       };
-
-      if (!payload.title || !payload.destination || !payload.description || !payload.image) {
-        throw new Error('Please fill out all required fields (title, destination, description, cover image).');
-      }
-
-      if (isNaN(payload.price) || payload.price < 0) {
-        throw new Error('Please enter a valid non-negative price.');
-      }
-
-      if (isNaN(payload.duration) || payload.duration < 1) {
-        throw new Error('Duration must be at least 1 day.');
-      }
 
       if (editingPackageId) {
         await updatePackage(editingPackageId, payload);
-        setSuccessMessage('Package updated successfully!');
+        setSuccessMessage('Package updated successfully.');
       } else {
         await createPackage(payload);
-        setSuccessMessage('Package created successfully!');
+        setSuccessMessage('New journey expedition created.');
       }
 
-      closeModal();
-      await fetchPackageList();
-
-      setTimeout(() => {
-        setSuccessMessage(null);
-      }, 4000);
+      handleCloseModal();
+      fetchPackageList();
+      setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err) {
-      console.error('Save package error:', err);
-      setFormError(err.response?.data?.message || err.message || 'Failed to save package.');
+      console.error('Error saving package:', err);
+      setFormError(err.response?.data?.message || 'Failed to persist package data.');
     } finally {
       setFormSubmitting(false);
     }
   };
 
-  const handleDeletePackage = async (id) => {
+  const handleDelete = async (id) => {
     try {
       setDeletingId(id);
       await deletePackage(id);
-      setPackages((prev) => prev.filter((p) => p._id !== id));
-      setSuccessMessage('Package deleted successfully.');
-      setTimeout(() => {
-        setSuccessMessage(null);
-      }, 4000);
+      setSuccessMessage('Expedition deleted.');
+      fetchPackageList();
+      setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err) {
-      console.error('Delete package error:', err);
-      alert(err.response?.data?.message || 'Could not delete package.');
+      console.error('Error deleting package:', err);
+      alert(err.response?.data?.message || 'Failed to delete package.');
     } finally {
       setDeletingId(null);
     }
   };
 
   return (
-    <div className="admin-page" style={{ padding: '2.5rem 0 5rem' }}>
+    <div style={{ padding: '3rem 0 6rem' }}>
       <div className="container">
-        {/* Header Section */}
-        <div className="section-header" style={{ marginBottom: '2rem' }}>
+        {/* Header Bar */}
+        <div className="admin-header-strip">
           <div>
-            <div className="hero-badge" style={{ marginBottom: '0.75rem', background: 'rgba(244, 63, 94, 0.15)', borderColor: 'rgba(244, 63, 94, 0.35)', color: 'var(--accent-rose)' }}>
-              <ShieldAlert size={14} />
-              <span>Admin Management Portal</span>
-            </div>
-            <h1 className="section-title">Manage Tour Packages</h1>
-            <p className="section-subtitle">
-              Add new packages, update pricing & itineraries, or remove expired offerings.
-            </p>
+            <span className="tag-badge" style={{ marginBottom: '0.5rem' }}>ADMINISTRATION</span>
+            <h1 style={{ fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-0.03em', margin: 0 }}>
+              Manage Tour Expeditions
+            </h1>
           </div>
-
-          <button
-            type="button"
-            className="btn-primary"
-            id="admin-create-package-btn"
-            onClick={openCreateModal}
-          >
-            <Plus size={18} />
-            <span>Add New Package</span>
+          <button onClick={handleOpenCreateModal} className="btn-black">
+            <Plus size={16} />
+            <span>Add New Journey</span>
           </button>
         </div>
 
-        {/* Success Alert */}
         {successMessage && (
-          <div
-            className="admin-alert success"
-            style={{
-              padding: '1rem 1.25rem',
-              borderRadius: 'var(--radius-md)',
-              background: 'rgba(16, 185, 129, 0.15)',
-              border: '1px solid rgba(16, 185, 129, 0.35)',
-              color: 'var(--accent-emerald)',
-              marginBottom: '1.5rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.65rem',
-              fontWeight: 500,
-            }}
-          >
+          <div className="alert-banner alert-banner-success">
             <Check size={18} />
             <span>{successMessage}</span>
           </div>
         )}
 
-        {/* Content Table / Loading / Error */}
         {loading ? (
-          <LoadingState message="Loading package records..." />
+          <LoadingState message="Loading catalog..." />
         ) : error ? (
           <ErrorState message={error} onRetry={fetchPackageList} />
-        ) : packages.length === 0 ? (
-          <div className="state-container">
-            <h3 className="state-title">No packages registered</h3>
-            <p className="state-desc">Click "Add New Package" above to populate the catalog.</p>
-          </div>
         ) : (
-          <div className="admin-table-container">
-            <table className="admin-table">
+          <div className="clean-table-box">
+            <table className="clean-table">
               <thead>
                 <tr>
-                  <th>Package Details</th>
+                  <th>Expedition</th>
                   <th>Destination</th>
                   <th>Duration</th>
+                  <th>Group</th>
                   <th>Price</th>
                   <th>Status</th>
                   <th style={{ textAlign: 'right' }}>Actions</th>
@@ -260,70 +206,53 @@ const AdminPackages = () => {
               </thead>
               <tbody>
                 {packages.map((pkg) => (
-                  <tr key={pkg._id} id={`admin-pkg-row-${pkg._id}`}>
+                  <tr key={pkg._id}>
                     <td>
-                      <div className="admin-pkg-cell">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
                         <img
                           src={pkg.image}
                           alt={pkg.title}
-                          className="admin-pkg-thumb"
-                          onError={(e) => {
-                            e.target.src = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=200&q=80';
-                          }}
+                          style={{ width: '48px', height: '48px', objectFit: 'cover' }}
                         />
                         <div>
-                          <div className="admin-pkg-title">{pkg.title}</div>
-                          <div className="admin-pkg-meta">
-                            Group: Max {pkg.maxGroupSize || 12} • {pkg.difficulty || 'Moderate'}
-                          </div>
+                          <strong style={{ color: 'var(--text-primary)', display: 'block' }}>{pkg.title}</strong>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ID: #{pkg._id.slice(-6).toUpperCase()}</span>
                         </div>
                       </div>
                     </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)' }}>
-                        <MapPin size={14} style={{ color: 'var(--accent-cyan)' }} />
-                        <span>{pkg.destination}</span>
-                      </div>
-                    </td>
+                    <td>{pkg.destination}</td>
                     <td>{pkg.duration} Days</td>
-                    <td>
-                      <strong style={{ color: 'var(--text-primary)' }}>
-                        ${pkg.price?.toLocaleString()}
-                      </strong>
-                    </td>
+                    <td>Max {pkg.maxGroupSize || 12}</td>
+                    <td><strong>${pkg.price?.toLocaleString()}</strong></td>
                     <td>
                       {pkg.featured ? (
-                        <span className="admin-status-badge featured">Featured</span>
+                        <span className="tag-badge tag-badge-dark">TOP SELLER</span>
                       ) : (
-                        <span className="admin-status-badge standard">Standard</span>
+                        <span className="tag-badge">STANDARD</span>
                       )}
                     </td>
-                    <td>
-                      <div className="admin-actions-cell">
+                    <td style={{ textAlign: 'right' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                         <button
-                          type="button"
-                          className="admin-action-btn edit"
-                          onClick={() => openEditModal(pkg)}
-                          id={`edit-pkg-btn-${pkg._id}`}
-                          title="Edit package"
+                          onClick={() => handleOpenEditModal(pkg)}
+                          className="btn-white"
+                          style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+                          title="Edit Journey"
                         >
-                          <Pencil size={15} />
-                          <span>Edit</span>
+                          <Pencil size={13} />
                         </button>
                         <button
-                          type="button"
-                          className="admin-action-btn delete"
-                          disabled={deletingId === pkg._id}
                           onClick={() => {
                             if (window.confirm(`Are you sure you want to delete "${pkg.title}"?`)) {
-                              handleDeletePackage(pkg._id);
+                              handleDelete(pkg._id);
                             }
                           }}
-                          id={`delete-pkg-btn-${pkg._id}`}
-                          title="Delete package"
+                          className="btn-white"
+                          style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem', color: 'var(--color-red)' }}
+                          title="Delete Journey"
+                          disabled={deletingId === pkg._id}
                         >
-                          <Trash2 size={15} />
-                          <span>{deletingId === pkg._id ? 'Deleting...' : 'Delete'}</span>
+                          <Trash2 size={13} />
                         </button>
                       </div>
                     </td>
@@ -334,132 +263,93 @@ const AdminPackages = () => {
           </div>
         )}
 
-        {/* Add/Edit Modal */}
+        {/* Modal Window */}
         {isModalOpen && (
-          <div className="admin-modal-overlay">
-            <div className="admin-modal-card">
-              <div className="admin-modal-header">
-                <div>
-                  <h2 className="admin-modal-title">
-                    {editingPackageId ? 'Edit Tour Package' : 'Create New Package'}
-                  </h2>
-                  <p className="admin-modal-subtitle">
-                    {editingPackageId
-                      ? 'Modify existing pricing, destinations, or descriptions.'
-                      : 'Fill in details to add a new vacation package to Wander World.'}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="admin-modal-close"
-                  id="admin-modal-close-btn"
-                >
+          <div className="modal-overlay-custom">
+            <div className="modal-content-custom">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-light)' }}>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 800 }}>
+                  {editingPackageId ? 'Edit Journey Details' : 'Create New Expedition'}
+                </h3>
+                <button onClick={handleCloseModal} style={{ padding: '0.25rem' }}>
                   <X size={20} />
                 </button>
               </div>
 
               {formError && (
-                <div
-                  style={{
-                    padding: '0.85rem 1.25rem',
-                    borderRadius: 'var(--radius-sm)',
-                    background: 'rgba(244, 63, 94, 0.15)',
-                    border: '1px solid rgba(244, 63, 94, 0.3)',
-                    color: 'var(--accent-rose)',
-                    marginBottom: '1.25rem',
-                    fontSize: '0.9rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                  }}
-                >
+                <div className="alert-banner alert-banner-error">
                   <AlertTriangle size={16} />
                   <span>{formError}</span>
                 </div>
               )}
 
-              <form onSubmit={handleFormSubmit} className="admin-form">
-                <div className="admin-form-row">
-                  <div className="admin-form-group">
-                    <label>Package Title *</label>
-                    <input
-                      type="text"
-                      name="title"
-                      required
-                      placeholder="e.g. Bali Tropical Paradise & Cultural Retreat"
-                      value={formData.title}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-
-                  <div className="admin-form-group">
-                    <label>Destination *</label>
-                    <input
-                      type="text"
-                      name="destination"
-                      required
-                      placeholder="e.g. Bali, Indonesia"
-                      value={formData.destination}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-
-                <div className="admin-form-group">
-                  <label>Trip Description *</label>
-                  <textarea
-                    name="description"
-                    rows="3"
-                    required
-                    placeholder="Provide a compelling overview of what travelers will experience..."
-                    value={formData.description}
+              <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div className="form-field-group">
+                  <label>Expedition Title *</label>
+                  <input
+                    name="title"
+                    type="text"
+                    value={formData.title}
                     onChange={handleInputChange}
+                    placeholder="e.g. Japan Express: Osaka to Tokyo"
+                    required
                   />
                 </div>
 
-                <div className="admin-form-row three-col">
-                  <div className="admin-form-group">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-field-group">
+                    <label>Destination *</label>
+                    <input
+                      name="destination"
+                      type="text"
+                      value={formData.destination}
+                      onChange={handleInputChange}
+                      placeholder="e.g. Kyoto, Japan"
+                      required
+                    />
+                  </div>
+
+                  <div className="form-field-group">
                     <label>Price (USD) *</label>
                     <input
-                      type="number"
                       name="price"
-                      min="0"
-                      required
-                      placeholder="1299"
+                      type="number"
                       value={formData.price}
                       onChange={handleInputChange}
-                    />
-                  </div>
-
-                  <div className="admin-form-group">
-                    <label>Duration (Days) *</label>
-                    <input
-                      type="number"
-                      name="duration"
+                      placeholder="1259"
                       min="1"
                       required
-                      placeholder="7"
-                      value={formData.duration}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-
-                  <div className="admin-form-group">
-                    <label>Max Group Size</label>
-                    <input
-                      type="number"
-                      name="maxGroupSize"
-                      min="1"
-                      placeholder="12"
-                      value={formData.maxGroupSize}
-                      onChange={handleInputChange}
                     />
                   </div>
                 </div>
 
-                <div className="admin-form-row">
-                  <div className="admin-form-group">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                  <div className="form-field-group">
+                    <label>Duration (Days) *</label>
+                    <input
+                      name="duration"
+                      type="number"
+                      value={formData.duration}
+                      onChange={handleInputChange}
+                      placeholder="9"
+                      min="1"
+                      required
+                    />
+                  </div>
+
+                  <div className="form-field-group">
+                    <label>Max Group Size</label>
+                    <input
+                      name="maxGroupSize"
+                      type="number"
+                      value={formData.maxGroupSize}
+                      onChange={handleInputChange}
+                      placeholder="12"
+                      min="1"
+                    />
+                  </div>
+
+                  <div className="form-field-group">
                     <label>Difficulty</label>
                     <select
                       name="difficulty"
@@ -469,77 +359,75 @@ const AdminPackages = () => {
                       <option value="Easy">Easy</option>
                       <option value="Moderate">Moderate</option>
                       <option value="Challenging">Challenging</option>
-                      <option value="Expert">Expert</option>
                     </select>
-                  </div>
-
-                  <div className="admin-form-group">
-                    <label>Cover Image URL *</label>
-                    <input
-                      type="url"
-                      name="image"
-                      required
-                      placeholder="https://images.unsplash.com/..."
-                      value={formData.image}
-                      onChange={handleInputChange}
-                    />
                   </div>
                 </div>
 
-                <div className="admin-form-group">
-                  <label>Included Amenities (Comma-separated)</label>
+                <div className="form-field-group">
+                  <label>Hero Image URL *</label>
                   <input
-                    type="text"
+                    name="image"
+                    type="url"
+                    value={formData.image}
+                    onChange={handleInputChange}
+                    placeholder="https://images.unsplash.com/photo-..."
+                    required
+                  />
+                </div>
+
+                <div className="form-field-group">
+                  <label>Trip Description *</label>
+                  <textarea
+                    name="description"
+                    rows="3"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    placeholder="Detailed overview of the journey experience..."
+                    style={{ border: '1px solid var(--border-light)', padding: '0.75rem', fontFamily: 'inherit', resize: 'vertical' }}
+                    required
+                  />
+                </div>
+
+                <div className="form-field-group">
+                  <label>Included Services (Comma separated)</label>
+                  <input
                     name="included"
-                    placeholder="Accommodation, Guided tours, Select meals"
+                    type="text"
                     value={formData.included}
                     onChange={handleInputChange}
                   />
                 </div>
 
-                <div className="admin-form-group">
-                  <label>Excluded Items (Comma-separated)</label>
+                <div className="form-field-group">
+                  <label>Excluded Items (Comma separated)</label>
                   <input
-                    type="text"
                     name="excluded"
-                    placeholder="International flights, Personal travel insurance"
+                    type="text"
                     value={formData.excluded}
                     onChange={handleInputChange}
                   />
                 </div>
 
-                <div className="admin-form-checkbox-row">
-                  <label className="admin-checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="featured"
-                      checked={formData.featured}
-                      onChange={handleInputChange}
-                    />
-                    <span>Feature this tour on the homepage</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    type="checkbox"
+                    id="featured-pkg-chk"
+                    name="featured"
+                    checked={formData.featured}
+                    onChange={handleInputChange}
+                    style={{ width: '16px', height: '16px' }}
+                  />
+                  <label htmlFor="featured-pkg-chk" style={{ fontSize: '0.875rem', fontWeight: 600 }}>
+                    Mark as Top Seller / Featured Expedition
                   </label>
                 </div>
 
-                <div className="admin-modal-actions">
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    className="btn-secondary"
-                    disabled={formSubmitting}
-                  >
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
+                  <button type="button" onClick={handleCloseModal} className="btn-white">
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    className="btn-primary"
-                    id="admin-submit-package-btn"
-                    disabled={formSubmitting}
-                  >
-                    {formSubmitting
-                      ? 'Saving...'
-                      : editingPackageId
-                      ? 'Update Package'
-                      : 'Create Package'}
+                  <button type="submit" className="btn-black" disabled={formSubmitting}>
+                    {formSubmitting ? 'Saving...' : editingPackageId ? 'Update Expedition' : 'Publish Expedition'}
                   </button>
                 </div>
               </form>

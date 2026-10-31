@@ -8,13 +8,12 @@ import {
   Users,
   Compass,
   ArrowRight,
-  Sparkles,
-  Ticket,
-  Receipt
+  Ticket
 } from 'lucide-react';
 import { getMyBookings } from '../services/bookingService';
 import { useAuth } from '../context/AuthContext';
 import { LoadingState, ErrorState } from '../components/common/StatusStates';
+import { getDestinationHeroImage } from '../utils/destinationImages';
 
 const MyBookings = () => {
   const { user } = useAuth();
@@ -44,7 +43,7 @@ const MyBookings = () => {
   }, []);
 
   if (loading) {
-    return <LoadingState message="Retrieving your bookings..." />;
+    return <LoadingState message="Retrieving your journey reservations..." />;
   }
 
   if (error) {
@@ -52,141 +51,122 @@ const MyBookings = () => {
   }
 
   return (
-    <div className="bookings-page">
+    <div style={{ padding: '3rem 0 6rem' }}>
       <div className="container">
         {/* Header */}
-        <div className="bookings-page-header">
-          <div className="bookings-title-group">
-            <div className="bookings-icon-badge">
-              <Ticket size={24} />
-            </div>
-            <div>
-              <h1 className="bookings-title">My Bookings</h1>
-              <p className="bookings-subtitle">
-                Welcome back, {user?.name}! Here are your reserved adventures and past expeditions.
-              </p>
-            </div>
-          </div>
-          <Link to="/packages" className="bookings-explore-btn">
-            <Sparkles size={16} />
-            <span>Discover More Tours</span>
-          </Link>
+        <div style={{ paddingBottom: '2rem', borderBottom: '1px solid var(--border-light)', marginBottom: '2.5rem' }}>
+          <span className="tag-badge" style={{ marginBottom: '0.5rem' }}>MEMBER PORTAL</span>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.5rem' }}>
+            My Reserved Expeditions
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
+            Confirmed departures, traveler rosters, and active bookings associated with <strong>{user?.email}</strong>.
+          </p>
         </div>
 
-        {/* Bookings List or Empty State */}
         {bookings.length === 0 ? (
-          <div className="bookings-empty-state">
-            <div className="empty-icon-wrap">
-              <Compass size={48} />
+          <div className="state-container" style={{ background: '#fff', border: '1px solid var(--border-light)', padding: '4rem 2rem' }}>
+            <div style={{ width: '48px', height: '48px', background: 'var(--bg-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+              <Ticket size={24} color="var(--text-primary)" />
             </div>
-            <h2 className="empty-title">No Bookings Yet</h2>
-            <p className="empty-desc">
-              You haven't reserved any adventures yet. The world is full of wondrous places waiting to be explored!
+            <h3 className="state-title">No Active Expeditions Booked</h3>
+            <p className="state-desc" style={{ marginBottom: '1.5rem' }}>
+              You haven't reserved any journeys yet. Explore our curated catalog of small group adventures.
             </p>
-            <Link to="/packages" className="btn-primary" id="empty-state-explore-btn">
-              <span>Browse Packages</span>
-              <ArrowRight size={16} />
+            <Link to="/packages" className="btn-black">
+              Explore Available Expeditions
             </Link>
           </div>
         ) : (
-          <div className="bookings-list">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {bookings.map((booking) => {
-              const pkg = booking.package || {};
-              const travelDateFormatted = booking.travelDate
-                ? new Date(booking.travelDate).toLocaleDateString(undefined, {
-                    weekday: 'short',
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })
-                : 'Date not set';
-              const bookedOnFormatted = booking.createdAt
-                ? new Date(booking.createdAt).toLocaleDateString(undefined, {
+              // Normalize populated package object whether returned as booking.package or booking.packageId
+              const pkg = booking.package || booking.packageId;
+              const formattedDate = booking.travelDate
+                ? new Date(booking.travelDate).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric',
                   })
-                : null;
+                : 'Date Pending';
+
+              // Safely resolve the destination-authentic image
+              const bookingThumb = getDestinationHeroImage(pkg);
 
               return (
-                <div key={booking._id} className="booking-item-card" id={`booking-card-${booking._id}`}>
-                  <div className="booking-card-media">
+                <div
+                  key={booking._id}
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid var(--border-light)',
+                    display: 'grid',
+                    gridTemplateColumns: '260px 1fr auto',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {/* Photo Thumbnail */}
+                  <div style={{ background: 'var(--bg-muted)', height: '100%', minHeight: '180px' }}>
                     <img
-                      src={pkg.image || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80'}
-                      alt={pkg.title || 'Tour Destination'}
-                      className="booking-card-img"
+                      src={bookingThumb}
+                      alt={pkg?.title || 'Expedition'}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
-                    <div className="booking-status-tag confirmed">
-                      <span className="status-dot" />
-                      <span>{booking.status || 'Confirmed'}</span>
+                  </div>
+
+                  {/* Booking Details */}
+                  <div style={{ padding: '1.5rem 2rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                      <span className="tag-badge tag-badge-emerald">CONFIRMED</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                        BOOKING #{booking._id.slice(-6).toUpperCase()}
+                      </span>
+                    </div>
+
+                    <h3 style={{ fontSize: '1.35rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>
+                      {pkg?.title || 'Private Itinerary Expedition'}
+                    </h3>
+
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <MapPin size={15} color="var(--text-primary)" />
+                        <span>{pkg?.destination || 'Destination Verified'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Calendar size={15} color="var(--text-primary)" />
+                        <span>Departure: {formattedDate}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Users size={15} color="var(--text-primary)" />
+                        <span>{booking.travelers} {booking.travelers === 1 ? 'Guest' : 'Guests'}</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="booking-card-body">
-                    <div className="booking-card-top">
-                      <div className="booking-destination-pill">
-                        <MapPin size={14} />
-                        <span>{pkg.destination || 'Worldwide'}</span>
-                      </div>
-                      {bookedOnFormatted && (
-                        <span className="booking-booked-date">
-                          Booked on {bookedOnFormatted}
-                        </span>
-                      )}
+                  {/* Total & Action */}
+                  <div
+                    style={{
+                      padding: '1.5rem 2rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-end',
+                      justifyContent: 'center',
+                      borderLeft: '1px solid var(--border-light)',
+                      background: 'var(--bg-subtle)',
+                      minWidth: '220px',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', fontWeight: 600 }}>
+                      Total Reserved
+                    </span>
+                    <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0.25rem 0 1rem' }}>
+                      ${booking.totalPrice?.toLocaleString()}
                     </div>
-
-                    <h3 className="booking-pkg-title">
-                      {pkg.title || 'Custom Adventure Tour'}
-                    </h3>
-
-                    <div className="booking-details-grid">
-                      <div className="booking-detail-pill">
-                        <Calendar size={16} className="detail-pill-icon" />
-                        <div>
-                          <span className="pill-label">Travel Date</span>
-                          <span className="pill-value">{travelDateFormatted}</span>
-                        </div>
-                      </div>
-
-                      <div className="booking-detail-pill">
-                        <Users size={16} className="detail-pill-icon" />
-                        <div>
-                          <span className="pill-label">Travelers</span>
-                          <span className="pill-value">{booking.travelers} Person{booking.travelers > 1 ? 's' : ''}</span>
-                        </div>
-                      </div>
-
-                      {pkg.duration && (
-                        <div className="booking-detail-pill">
-                          <Clock size={16} className="detail-pill-icon" />
-                          <div>
-                            <span className="pill-label">Duration</span>
-                            <span className="pill-value">{pkg.duration} Days</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="booking-card-footer">
-                      <div className="booking-price-summary">
-                        <span className="price-summary-label">Total Amount Paid</span>
-                        <div className="price-summary-val">
-                          ${booking.totalPrice?.toLocaleString()} <span>USD</span>
-                        </div>
-                      </div>
-
-                      <div className="booking-actions-group">
-                        {pkg._id && (
-                          <Link
-                            to={`/packages/${pkg._id}`}
-                            className="btn-view-pkg-link"
-                          >
-                            <span>View Tour Details</span>
-                            <ArrowRight size={15} />
-                          </Link>
-                        )}
-                      </div>
-                    </div>
+                    {pkg?._id && (
+                      <Link to={`/packages/${pkg._id}`} className="btn-black" style={{ padding: '0.55rem 1.15rem', fontSize: '0.8rem' }}>
+                        <span>View Itinerary</span>
+                        <ArrowRight size={14} />
+                      </Link>
+                    )}
                   </div>
                 </div>
               );

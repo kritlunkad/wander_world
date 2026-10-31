@@ -1,9 +1,10 @@
+const path = require('path');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const Package = require('./models/Package');
 
-// Load environment variables
-dotenv.config();
+// Load environment variables reliably from server/.env
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const samplePackages = [
   {
@@ -17,7 +18,9 @@ const samplePackages = [
     image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1200&q=80',
     images: [
       'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
     ],
     itinerary: [
       { day: 1, title: 'Arrival in Denpasar & Ubud Transfer', description: 'Airport greeting, private transfer to Ubud resort, and welcome Balinese dinner.' },
@@ -45,7 +48,9 @@ const samplePackages = [
     image: 'https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=1200&q=80',
     images: [
       'https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=80',
     ],
     itinerary: [
       { day: 1, title: 'Zurich to Lucerne & Lake Cruise', description: 'Arrive in Zurich, scenic train to Lucerne, Chapel Bridge tour, and sunset lake boat cruise.' },
@@ -72,7 +77,9 @@ const samplePackages = [
     image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80',
     images: [
       'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=800&q=80',
     ],
     itinerary: [
       { day: 1, title: 'Arrive in Tokyo & Shinjuku Neon Night', description: 'Check-in to Shinjuku hotel, evening walk through Omoide Yokocho and Shibuya Crossing.' },
@@ -101,6 +108,9 @@ const samplePackages = [
     image: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1200&q=80',
     images: [
       'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1534177616072-ef7dc120449d?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1526481280693-3bfa7568e0f3?auto=format&fit=crop&w=800&q=80',
     ],
     itinerary: [
       { day: 1, title: 'Arusha to Tarangire National Park', description: 'Drive into Tarangire, famous for gigantic baobab trees and massive elephant herds.' },
@@ -127,6 +137,9 @@ const samplePackages = [
     image: 'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=1200&q=80',
     images: [
       'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1520175480921-4edfa2983e0f?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80',
     ],
     itinerary: [
       { day: 1, title: 'Naples to Sorrento & Limoncello Tasting', description: 'Private transfer from Naples, stroll Sorrento piazza, and artisan limoncello workshop.' },
@@ -152,6 +165,9 @@ const samplePackages = [
     image: 'https://images.unsplash.com/photo-1504893524553-b855bce32c67?auto=format&fit=crop&w=1200&q=80',
     images: [
       'https://images.unsplash.com/photo-1504893524553-b855bce32c67?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1483375801503-374c5f66cb61?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1529963183134-61a90db47eaf?auto=format&fit=crop&w=800&q=80',
     ],
     itinerary: [
       { day: 1, title: 'Arrival & Blue Lagoon Geothermal Soak', description: 'Direct pickup from Keflavik airport to relax in the healing silica mineral waters.' },
@@ -179,6 +195,9 @@ const samplePackages = [
     image: 'https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=1200&q=80',
     images: [
       'https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80',
     ],
     itinerary: [
       { day: 1, title: 'Arrival in Jaipur (The Pink City)', description: 'Airport welcome with flower garlands, check-in to heritage haveli, and evening local bazaar visit.' },
@@ -206,6 +225,9 @@ const samplePackages = [
     image: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1200&q=80',
     images: [
       'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80',
     ],
     itinerary: [
       { day: 1, title: 'Athens Acropolis & Evening Plaka', description: 'Explore the Parthenon citadel and enjoy dinner in the lively pedestrian streets of Plaka.' },

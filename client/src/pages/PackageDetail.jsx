@@ -10,6 +10,8 @@ import {
   Calendar,
   ArrowLeft,
   ShieldCheck,
+  Plane,
+  Building2,
   Compass,
   AlertCircle,
   CheckCircle2,
@@ -17,10 +19,12 @@ import {
   ArrowRight,
   LogIn
 } from 'lucide-react';
-import { getPackageById } from '../services/packageService';
+import { getPackageById, getPackages } from '../services/packageService';
 import { createBooking } from '../services/bookingService';
 import { useAuth } from '../context/AuthContext';
 import { LoadingState, ErrorState } from '../components/common/StatusStates';
+import PackageCard from '../components/packages/PackageCard';
+import { getDestinationGallery, getDestinationHeroImage } from '../utils/destinationImages';
 
 const PackageDetail = () => {
   const { id } = useParams();
@@ -29,6 +33,7 @@ const PackageDetail = () => {
   const { user, isAuthenticated } = useAuth();
 
   const [pkg, setPkg] = useState(null);
+  const [recommended, setRecommended] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -47,6 +52,11 @@ const PackageDetail = () => {
       const res = await getPackageById(id);
       if (res && res.data) {
         setPkg(res.data);
+      }
+      // Also fetch other packages for recommendations
+      const allRes = await getPackages();
+      if (allRes && allRes.data) {
+        setRecommended(allRes.data.filter(p => p._id !== id).slice(0, 3));
       }
     } catch (err) {
       console.error('Error fetching package detail:', err);
@@ -71,17 +81,17 @@ const PackageDetail = () => {
     }
 
     if (!travelDate) {
-      setBookingError('Please choose a valid travel date.');
+      setBookingError('Please select a preferred departure date.');
       return;
     }
 
     if (travelers < 1) {
-      setBookingError('At least 1 traveler is required.');
+      setBookingError('Please specify at least 1 traveler.');
       return;
     }
 
     if (pkg.maxGroupSize && travelers > pkg.maxGroupSize) {
-      setBookingError(`Maximum allowable travelers for this group tour is ${pkg.maxGroupSize}.`);
+      setBookingError(`Maximum group capacity is limited to ${pkg.maxGroupSize} guests.`);
       return;
     }
 
@@ -98,412 +108,323 @@ const PackageDetail = () => {
       }
     } catch (err) {
       console.error('Booking submission error:', err);
-      const msg = err.response?.data?.message || 'Failed to place booking. Please try again.';
-      setBookingError(msg);
+      setBookingError(err.response?.data?.message || 'Failed to submit booking reservation.');
     } finally {
       setBookingLoading(false);
     }
   };
 
-  if (loading) {
-    return <LoadingState message="Loading package details..." />;
-  }
+  if (loading) return <LoadingState message="Loading itinerary and journey specs..." />;
+  if (error || !pkg) return <ErrorState message={error || 'Package not found'} onRetry={fetchPackage} />;
 
-  if (error || !pkg) {
-    return <ErrorState message={error || 'Package not found'} onRetry={fetchPackage} />;
-  }
+  // Get authentic, destination-specific gallery photos and hero
+  const sidePhotos = getDestinationGallery(pkg);
+  const heroImage = getDestinationHeroImage(pkg);
 
-  const totalPrice = (pkg.price || 0) * Number(travelers);
+  const includedItems = pkg.included
+    ? (Array.isArray(pkg.included) ? pkg.included : pkg.included.split(',').map(s => s.trim()))
+    : ['All luxury accommodations', 'Daily breakfasts & select regional feasts', 'Private air-conditioned transport', 'Expert local tour directors'];
+
+  const excludedItems = pkg.excluded
+    ? (Array.isArray(pkg.excluded) ? pkg.excluded : pkg.excluded.split(',').map(s => s.trim()))
+    : ['International airfare to destination', 'Personal travel insurance', 'Optional solo excursions', 'Discretionary gratuities'];
+
+  const totalCalculated = (pkg.price || 0) * Number(travelers);
+  const tripCode = `OD-${pkg._id.slice(-4).toUpperCase()}`;
 
   return (
-    <div className="detail-page">
+    <div className="detail-page-container">
       <div className="container">
         {/* Navigation Breadcrumb */}
-        <Link to="/packages" className="detail-back-link" id="detail-back-btn">
-          <ArrowLeft size={18} />
-          <span>Back to Packages</span>
-        </Link>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <Link to="/packages" className="btn-white" style={{ padding: '0.45rem 0.95rem', fontSize: '0.8rem', display: 'inline-flex' }}>
+            <ArrowLeft size={14} />
+            <span>Back to All Expeditions</span>
+          </Link>
+        </div>
 
-        {/* Hero Card */}
-        <div className="detail-hero-card">
-          <div className="detail-banner">
-            <img
-              src={pkg.image}
-              alt={pkg.title}
-              className="detail-banner-img"
-            />
-            <div className="detail-banner-gradient" />
-            <div className="detail-banner-content">
-              <div className="detail-badge-group">
-                {pkg.featured && <span className="badge-featured">Featured Tour</span>}
-                <div className="badge-rating">
-                  <Star size={14} fill="#fbbf24" stroke="none" />
-                  <span>{pkg.rating?.toFixed(1) || '4.8'}</span>
-                  <span style={{ color: 'var(--text-muted)' }}>({pkg.reviewsCount || 0} reviews)</span>
-                </div>
-                {pkg.difficulty && (
-                  <span
-                    style={{
-                      background: 'rgba(56, 189, 248, 0.15)',
-                      color: 'var(--accent-cyan)',
-                      padding: '0.35rem 0.75rem',
-                      borderRadius: 'var(--radius-full)',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                    }}
-                  >
-                    Level: {pkg.difficulty}
-                  </span>
-                )}
-              </div>
+        {/* Bento Gallery Grid (Strictly destination-specific photos) */}
+        <section className="bento-gallery-container">
+          <div className="bento-item-featured">
+            <img src={heroImage} alt={pkg.title} />
+          </div>
+          <div className="bento-item-side">
+            <img src={sidePhotos[0] || heroImage} alt={`${pkg.destination} scenery 1`} />
+          </div>
+          <div className="bento-item-side">
+            <img src={sidePhotos[1] || heroImage} alt={`${pkg.destination} scenery 2`} />
+          </div>
+          <div className="bento-item-side">
+            <img src={sidePhotos[2] || heroImage} alt={`${pkg.destination} scenery 3`} />
+          </div>
+          <div className="bento-item-side">
+            <img src={sidePhotos[3] || heroImage} alt={`${pkg.destination} scenery 4`} />
+          </div>
+        </section>
 
-              <h1 className="detail-title">{pkg.title}</h1>
+        {/* Title & Tag Strip */}
+        <div className="detail-meta-pills">
+          <span className="tag-badge tag-badge-dark">CURATED EXPEDITION</span>
+          <span className="tag-badge">TRIP CODE: {tripCode}</span>
+          <span className="tag-badge tag-badge-emerald">CONFIRMED DEPARTURES</span>
+        </div>
 
-              <div className="detail-location">
-                <MapPin size={18} style={{ color: 'var(--accent-cyan)', flexShrink: 0 }} />
-                <span>{pkg.destination}</span>
-              </div>
+        <h1 className="detail-main-title">{pkg.title}</h1>
+        <p className="detail-summary-lead">{pkg.description}</p>
+
+        {/* Quick Spec Strip */}
+        <div className="spec-summary-strip">
+          <div className="spec-strip-node">
+            <div className="spec-icon-frame"><Clock size={20} /></div>
+            <div>
+              <div className="spec-node-label">Duration</div>
+              <div className="spec-node-value">{pkg.duration} Days</div>
             </div>
           </div>
 
-          <div className="detail-meta-strip">
-            <div className="meta-strip-item">
-              <Clock size={20} className="meta-icon" />
-              <div>
-                <span className="meta-label">Duration</span>
-                <span className="meta-val">{pkg.duration} Days / {pkg.duration - 1 > 0 ? pkg.duration - 1 : 1} Nights</span>
-              </div>
+          <div className="spec-strip-node">
+            <div className="spec-icon-frame"><Users size={20} /></div>
+            <div>
+              <div className="spec-node-label">Group Size</div>
+              <div className="spec-node-value">Max {pkg.maxGroupSize || 12} Guests</div>
             </div>
+          </div>
 
-            <div className="meta-strip-item">
-              <Users size={20} className="meta-icon" />
-              <div>
-                <span className="meta-label">Group Capacity</span>
-                <span className="meta-val">Up to {pkg.maxGroupSize || 12} People</span>
-              </div>
+          <div className="spec-strip-node">
+            <div className="spec-icon-frame"><Compass size={20} /></div>
+            <div>
+              <div className="spec-node-label">Activity Rating</div>
+              <div className="spec-node-value">{pkg.difficulty || 'Moderate'}</div>
             </div>
+          </div>
 
-            <div className="meta-strip-item">
-              <ShieldCheck size={20} className="meta-icon" />
-              <div>
-                <span className="meta-label">Guided Experience</span>
-                <span className="meta-val">Certified Tour Experts</span>
-              </div>
-            </div>
-
-            <div className="meta-strip-item">
-              <Compass size={20} className="meta-icon" />
-              <div>
-                <span className="meta-label">Package Type</span>
-                <span className="meta-val">All-Inclusive Land Tour</span>
-              </div>
+          <div className="spec-strip-node">
+            <div className="spec-icon-frame"><Building2 size={20} /></div>
+            <div>
+              <div className="spec-node-label">Accommodation</div>
+              <div className="spec-node-value">Boutique Stays & Lodges</div>
             </div>
           </div>
         </div>
 
-        {/* Main Content Layout */}
+        {/* Main 2-Column Content Layout */}
         <div className="detail-content-layout">
-          {/* Main Info Column */}
-          <div className="detail-main-col">
-            {/* Overview */}
-            <section className="detail-section">
-              <h2 className="section-title-sm">About This Adventure</h2>
-              <p className="detail-description">{pkg.description}</p>
-            </section>
-
-            {/* Gallery (if available) */}
-            {pkg.images && pkg.images.length > 0 && (
-              <section className="detail-section">
-                <h2 className="section-title-sm">Photo Gallery</h2>
-                <div className="detail-gallery-grid">
-                  {pkg.images.map((imgUrl, index) => (
-                    <div key={index} className="gallery-img-wrap">
-                      <img
-                        src={imgUrl}
-                        alt={`${pkg.title} snapshot ${index + 1}`}
-                        className="gallery-thumb"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Itinerary */}
-            <section className="detail-section">
-              <h2 className="section-title-sm">Day-by-Day Itinerary</h2>
-              {pkg.itinerary && pkg.itinerary.length > 0 ? (
-                <div className="itinerary-timeline">
-                  {pkg.itinerary.map((item, idx) => (
-                    <div key={idx} className="timeline-item">
-                      <div className="timeline-marker">
-                        <span>{item.day || idx + 1}</span>
-                      </div>
-                      <div className="timeline-card">
-                        <div className="timeline-header">
-                          <span className="timeline-day-tag">Day {item.day || idx + 1}</span>
-                          <h3 className="timeline-title">{item.title}</h3>
-                        </div>
-                        <p className="timeline-desc">{item.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p style={{ color: 'var(--text-secondary)' }}>
-                  A detailed daily schedule will be provided upon reservation.
+          {/* Left Column (Editorial, Included, Itinerary) */}
+          <div className="detail-left-column">
+            {/* Trip Overview */}
+            <div>
+              <h2 className="section-block-title">Trip Overview</h2>
+              <div className="overview-editorial-body">
+                <p style={{ marginBottom: '1rem' }}>
+                  Step off the conventional tourist track and immerse yourself in {pkg.destination}.
+                  From handpicked boutique lodgings to private viewings led by certified regional historians,
+                  this Odyssey expedition connects you with the cultural essence, local architecture, and dramatic landscapes
+                  that define the country.
                 </p>
-              )}
-            </section>
+                <p>
+                  Every transport leg, accommodation stay, and curated regional dining experience is vetted for
+                  comfort and uncompromising authenticity.
+                </p>
+              </div>
+            </div>
 
-            {/* Inclusions & Exclusions */}
-            <section className="detail-section">
-              <h2 className="section-title-sm">
-                What's Included & Excluded
-              </h2>
-
-              <div className="inclusions-grid">
-                <div>
-                  <h4 style={{ color: 'var(--accent-emerald)', marginBottom: '1rem', fontWeight: 700 }}>
-                    Included in Package
-                  </h4>
-                  <ul className="inclusion-list">
-                    {pkg.included && pkg.included.length > 0 ? (
-                      pkg.included.map((inc, i) => (
-                        <li key={i} className="inclusion-item included">
-                          <Check size={18} />
-                          <span>{inc}</span>
-                        </li>
-                      ))
-                    ) : (
-                      <li className="inclusion-item">Standard guided services</li>
-                    )}
+            {/* What's Included & Excluded */}
+            <div>
+              <h2 className="section-block-title">What’s Included</h2>
+              <div className="checklist-two-col">
+                <div className="checklist-card">
+                  <h4>Included Services</h4>
+                  <ul className="checklist-items-list">
+                    {includedItems.map((item, i) => (
+                      <li key={i}>
+                        <Check size={16} color="var(--color-black)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                        <span>{item}</span>
+                      </li>
+                    ))}
                   </ul>
                 </div>
 
-                <div>
-                  <h4 style={{ color: 'var(--accent-rose)', marginBottom: '1rem', fontWeight: 700 }}>
-                    Excluded
-                  </h4>
-                  <ul className="inclusion-list">
-                    {pkg.excluded && pkg.excluded.length > 0 ? (
-                      pkg.excluded.map((exc, i) => (
-                        <li key={i} className="inclusion-item excluded">
-                          <X size={18} />
-                          <span>{exc}</span>
-                        </li>
-                      ))
-                    ) : (
-                      <li className="inclusion-item">Personal expenses & extra flights</li>
-                    )}
+                <div className="checklist-card">
+                  <h4>Not Included</h4>
+                  <ul className="checklist-items-list">
+                    {excludedItems.map((item, i) => (
+                      <li key={i}>
+                        <X size={16} color="var(--text-muted)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                        <span>{item}</span>
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>
-            </section>
-          </div>
+            </div>
 
-          {/* Sticky Booking Sidebar */}
-          <aside className="detail-sidebar">
-            <div className="booking-card">
-              <div className="booking-price-header">
-                <span className="price-label">Price per person</span>
-                <div className="booking-price-large">
-                  ${pkg.price?.toLocaleString()} <span>USD</span>
-                </div>
-              </div>
-
-              <div className="booking-features-list">
-                <div className="booking-feature-row">
-                  <div className="booking-feature-label">
-                    <Clock size={16} />
-                    <span>Duration</span>
-                  </div>
-                  <span className="booking-feature-value">{pkg.duration} Days</span>
-                </div>
-
-                <div className="booking-feature-row">
-                  <div className="booking-feature-label">
-                    <Users size={16} />
-                    <span>Max Group Size</span>
-                  </div>
-                  <span className="booking-feature-value">{pkg.maxGroupSize || 12} People</span>
-                </div>
-
-                <div className="booking-feature-row">
-                  <div className="booking-feature-label">
-                    <MapPin size={16} />
-                    <span>Destination</span>
-                  </div>
-                  <span className="booking-feature-value">{pkg.destination}</span>
-                </div>
-              </div>
-
-              {/* Day 4 Booking Form */}
-              {bookingSuccess ? (
-                <div className="booking-success-box" id="booking-success-card">
-                  <div className="booking-success-icon">
-                    <CheckCircle2 size={36} />
-                  </div>
-                  <h3 className="booking-success-title">Booking Confirmed!</h3>
-                  <p className="booking-success-subtitle">
-                    Pack your bags! Your tour reservation has been registered.
-                  </p>
-
-                  <div className="booking-summary-receipt">
-                    <div className="receipt-row">
-                      <span>Travel Date:</span>
-                      <strong>{new Date(bookingSuccess.travelDate).toLocaleDateString(undefined, { dateStyle: 'medium' })}</strong>
+            {/* Daily Itinerary */}
+            <div>
+              <h2 className="section-block-title">Day-by-Day Itinerary</h2>
+              <div className="itinerary-timeline-list">
+                {pkg.itinerary && pkg.itinerary.length > 0 ? (
+                  pkg.itinerary.map((dayItem, idx) => (
+                    <div key={idx} className="itinerary-day-card">
+                      <div className="itinerary-day-header">
+                        <span className="itinerary-day-badge">Day {dayItem.day || idx + 1}</span>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Included: Breakfast, Guided Tour</span>
+                      </div>
+                      <h4 className="itinerary-day-title">{dayItem.title}</h4>
+                      <p className="itinerary-day-desc">{dayItem.description}</p>
                     </div>
-                    <div className="receipt-row">
-                      <span>Travelers:</span>
-                      <strong>{bookingSuccess.travelers} person(s)</strong>
-                    </div>
-                    <div className="receipt-row receipt-total">
-                      <span>Total Paid:</span>
-                      <strong>${bookingSuccess.totalPrice?.toLocaleString()} USD</strong>
-                    </div>
-                  </div>
-
-                  <div className="booking-success-actions">
-                    <Link to="/my-bookings" className="btn-view-bookings">
-                      <span>View in My Bookings</span>
-                      <ArrowRight size={16} />
-                    </Link>
-                    <button
-                      type="button"
-                      className="btn-book-another"
-                      onClick={() => setBookingSuccess(null)}
-                    >
-                      Book Another Tour
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <form onSubmit={handleBookingSubmit} className="booking-form" id="package-booking-form">
-                  <div className="booking-form-header">
-                    <Calendar size={18} style={{ color: 'var(--accent-cyan)' }} />
-                    <h4>Reserve Your Departure</h4>
-                  </div>
-
-                  {bookingError && (
-                    <div className="booking-error-banner" role="alert">
-                      <AlertCircle size={16} />
-                      <span>{bookingError}</span>
-                    </div>
-                  )}
-
-                  <div className="booking-field-group">
-                    <label htmlFor="booking-travel-date" className="booking-field-label">
-                      Select Travel Date
-                    </label>
-                    <div className="booking-input-wrap">
-                      <input
-                        id="booking-travel-date"
-                        type="date"
-                        className="booking-input"
-                        min={tomorrow}
-                        value={travelDate}
-                        onChange={(e) => setTravelDate(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="booking-field-group">
-                    <label htmlFor="booking-travelers" className="booking-field-label">
-                      Number of Travelers
-                    </label>
-                    <div className="booking-travelers-picker">
-                      <button
-                        type="button"
-                        className="counter-btn"
-                        onClick={() => setTravelers((prev) => Math.max(1, prev - 1))}
-                        disabled={travelers <= 1}
-                      >
-                        -
-                      </button>
-                      <input
-                        id="booking-travelers"
-                        type="number"
-                        className="booking-counter-input"
-                        min="1"
-                        max={pkg.maxGroupSize || 12}
-                        value={travelers}
-                        onChange={(e) => {
-                          const val = Number(e.target.value);
-                          if (!isNaN(val)) {
-                            setTravelers(Math.max(1, Math.min(val, pkg.maxGroupSize || 12)));
-                          }
-                        }}
-                        required
-                      />
-                      <button
-                        type="button"
-                        className="counter-btn"
-                        onClick={() => setTravelers((prev) => Math.min(pkg.maxGroupSize || 12, prev + 1))}
-                        disabled={travelers >= (pkg.maxGroupSize || 12)}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Live Cost Breakdown */}
-                  <div className="booking-cost-breakdown">
-                    <div className="cost-row">
-                      <span>${pkg.price?.toLocaleString()} × {travelers} traveler{travelers > 1 ? 's' : ''}</span>
-                      <span>${totalPrice.toLocaleString()}</span>
-                    </div>
-                    <div className="cost-row cost-total">
-                      <span>Total Price</span>
-                      <span className="total-highlight">${totalPrice.toLocaleString()} USD</span>
-                    </div>
-                  </div>
-
-                  {isAuthenticated ? (
-                    <button
-                      type="submit"
-                      className="btn-book-now"
-                      id="book-now-submit-btn"
-                      disabled={bookingLoading}
-                    >
-                      {bookingLoading ? (
-                        <>
-                          <span className="spinner-small" />
-                          <span>Securing Reservation...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles size={18} />
-                          <span>Confirm & Book Now</span>
-                        </>
-                      )}
-                    </button>
-                  ) : (
-                    <div className="unauthenticated-booking-box">
-                      <Link
-                        to="/login"
-                        state={{ from: location }}
-                        className="btn-book-now btn-login-to-book"
-                        id="login-to-book-btn"
-                      >
-                        <LogIn size={18} />
-                        <span>Log in to Book Tour</span>
-                      </Link>
-                      <p className="login-to-book-hint">
-                        Quick reservation will save your date & travelers.
+                  ))
+                ) : (
+                  Array.from({ length: Math.min(pkg.duration || 4, 5) }).map((_, idx) => (
+                    <div key={idx} className="itinerary-day-card">
+                      <div className="itinerary-day-header">
+                        <span className="itinerary-day-badge">Day {idx + 1}</span>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Guided Exploration</span>
+                      </div>
+                      <h4 className="itinerary-day-title">
+                        {idx === 0 && `Arrival in ${pkg.destination} & Evening Welcome Dinner`}
+                        {idx === 1 && `Historic Districts & Cultural Walking Tour`}
+                        {idx === 2 && `Scenic Nature Excursion & Private Local Artisan Workshop`}
+                        {idx === 3 && `Hidden Gems & Panoramic Mountain / Coastal Excursion`}
+                        {idx >= 4 && `Leisure Morning, Farewell Reception & Departure`}
+                      </h4>
+                      <p className="itinerary-day-desc">
+                        Enjoy curated exploration with your private tour guide, followed by dedicated free time to explore local cafes and historic markets at your own pace.
                       </p>
                     </div>
-                  )}
-                </form>
-              )}
-
-              <p className="booking-note">
-                🔒 Instant reservation lock with 100% money-back guarantee before cancellation cutoff.
-              </p>
+                  ))
+                )}
+              </div>
             </div>
+          </div>
+
+          {/* Right Column: Sticky Booking Widget (Aventra Top Seller Style) */}
+          <aside className="sticky-booking-widget">
+            <span className="widget-top-seller-tag">TOP SELLER</span>
+            <div className="widget-trip-duration">{pkg.duration} Days in {pkg.destination}</div>
+
+            <div className="widget-price-hero">
+              <span>${pkg.price?.toLocaleString()}</span>
+              <span className="widget-strikethrough-price">${((pkg.price || 1000) * 1.25).toFixed(0)}</span>
+            </div>
+
+            <div className="widget-trip-code-row">
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <Calendar size={14} /> Valid Departure: Daily
+              </span>
+              <span>Code: {tripCode}</span>
+            </div>
+
+            {/* 3 Quick Inclusions */}
+            <div className="inclusions-quick-strip">
+              <div className="quick-inclusion-node">
+                <Plane size={18} />
+                <span>Transfers</span>
+              </div>
+              <div className="quick-inclusion-node">
+                <Building2 size={18} />
+                <span>Hotels</span>
+              </div>
+              <div className="quick-inclusion-node">
+                <Compass size={18} />
+                <span>Expert Guides</span>
+              </div>
+            </div>
+
+            {bookingSuccess ? (
+              <div className="alert-banner alert-banner-success" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '700' }}>
+                  <CheckCircle2 size={18} /> Reservation Confirmed!
+                </div>
+                <p style={{ marginTop: '0.35rem', fontSize: '0.85rem' }}>
+                  Your spot for <strong>#{bookingSuccess._id?.slice(-6).toUpperCase()}</strong> has been reserved.
+                </p>
+                <Link to="/my-bookings" className="btn-black" style={{ marginTop: '1rem', width: '100%', fontSize: '0.85rem' }}>
+                  View In My Bookings
+                </Link>
+              </div>
+            ) : (
+              <form onSubmit={handleBookingSubmit} className="booking-form-box">
+                {bookingError && (
+                  <div className="alert-banner alert-banner-error">
+                    <AlertCircle size={16} />
+                    <span>{bookingError}</span>
+                  </div>
+                )}
+
+                <div className="form-field-group">
+                  <label htmlFor="travel-date">Departure Date</label>
+                  <input
+                    id="travel-date"
+                    type="date"
+                    min={tomorrow}
+                    value={travelDate}
+                    onChange={(e) => setTravelDate(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-field-group">
+                  <label htmlFor="travelers-count">Number of Travelers</label>
+                  <select
+                    id="travelers-count"
+                    value={travelers}
+                    onChange={(e) => setTravelers(Number(e.target.value))}
+                  >
+                    {Array.from({ length: pkg.maxGroupSize || 8 }, (_, i) => i + 1).map((num) => (
+                      <option key={num} value={num}>
+                        {num} {num === 1 ? 'Traveler' : 'Travelers'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Total Summary */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 0', borderTop: '1px solid var(--border-light)' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Calculated Total:</span>
+                  <span style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-primary)' }}>
+                    ${totalCalculated.toLocaleString()}
+                  </span>
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn-black"
+                  style={{ width: '100%', padding: '0.95rem' }}
+                  disabled={bookingLoading}
+                >
+                  {bookingLoading ? (
+                    'Reserving Spot...'
+                  ) : isAuthenticated ? (
+                    'Book Now'
+                  ) : (
+                    'Sign In to Book'
+                  )}
+                </button>
+              </form>
+            )}
           </aside>
         </div>
+
+        {/* Recommended for You Grid (Aventra bottom strip) */}
+        {recommended.length > 0 && (
+          <section style={{ marginTop: '5rem', paddingTop: '3rem', borderTop: '1px solid var(--border-light)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem' }}>
+              <div>
+                <span className="tag-badge" style={{ marginBottom: '0.5rem' }}>EXPEDITIONS</span>
+                <h2 className="section-block-title" style={{ marginBottom: 0 }}>Recommended For You</h2>
+              </div>
+              <Link to="/packages" className="btn-white" style={{ fontSize: '0.8rem', padding: '0.5rem 1rem' }}>
+                View All Expeditions
+              </Link>
+            </div>
+
+            <div className="packages-cards-grid" style={{ padding: 0 }}>
+              {recommended.map((item) => (
+                <PackageCard key={item._id} pkg={item} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
