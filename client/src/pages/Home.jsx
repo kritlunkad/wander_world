@@ -4,6 +4,7 @@ import { Compass, Sparkles, Shield, Award, ArrowRight } from 'lucide-react';
 import { getPackages } from '../services/packageService';
 import PackageCard from '../components/packages/PackageCard';
 import { LoadingState, ErrorState } from '../components/common/StatusStates';
+import AirplaneWindowDemo from '../components/ui/airplane-window-demo';
 
 const Home = () => {
   const [packages, setPackages] = useState([]);
@@ -94,6 +95,11 @@ const Home = () => {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Airplane Window Gallery: Interactive Window Seat Experience */}
+      <section className="container">
+        <AirplaneWindowDemo />
       </section>
 
       {/* Featured Tours Section */}
