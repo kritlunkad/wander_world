@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 120" width="100%" height="100%">
+  <defs>
+    <!-- Rich Metallic Gold Gradient matching original logo -->
+    <linearGradient id="goldGradientWhiteBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8C98B" />
+      <stop offset="35%" stop-color="#D4AF67" />
+      <stop offset="70%" stop-color="#BF974B" />
+      <stop offset="100%" stop-color="#A57D33" />
+    </linearGradient>
+    <linearGradient id="goldGradientLightWhiteBg" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F3DFB0" />
+      <stop offset="50%" stop-color="#E1BF7D" />
+      <stop offset="100%" stop-color="#C59E50" />
+    </linearGradient>
+  </defs>
+
+  <!-- Icon Emblem (Left) Preserving exact gold metallic colors -->
+  <g transform="translate(10, 10)">
+    <!-- Outer concentric thin circle in luxury gold -->
+    <circle cx="50" cy="50" r="48" fill="none" stroke="url(#goldGradientWhiteBg)" stroke-width="2" />
+    
+    <!-- Inner segmented ring -->
+    <circle cx="50" cy="50" r="41" fill="none" stroke="url(#goldGradientLightWhiteBg)" stroke-width="1.3" stroke-dasharray="14 5 22 5 10 5" opacity="0.9" />
+    
+    <!-- Compass cardinal ticks in gold -->
+    <!-- North arrow point -->
+    <polygon points="50,2 45,20 55,20" fill="url(#goldGradientWhiteBg)" />
+    <line x1="50" y1="20" x2="50" y2="30" stroke="url(#goldGradientWhiteBg)" stroke-width="1.8" />
+    <!-- South tick -->
+    <line x1="50" y1="78" x2="50" y2="98" stroke="url(#goldGradientWhiteBg)" stroke-width="2" />
+    <!-- West tick -->
+    <line x1="2" y1="50" x2="22" y2="50" stroke="url(#goldGradientWhiteBg)" stroke-width="2" />
+    <!-- East tick -->
+    <line x1="78" y1="50" x2="98" y2="50" stroke="url(#goldGradientWhiteBg)" stroke-width="2" />
+
+    <!-- Mountain Peaks Inside 'O' in gold -->
+    <path d="M36,52 L47,38 L57,51 L66,41 L72,50" fill="none" stroke="url(#goldGradientWhiteBg)" stroke-width="2" stroke-linejoin="round" />
+    <path d="M47,38 L51,44" fill="none" stroke="url(#goldGradientLightWhiteBg)" stroke-width="1.4" />
+
+    <!-- Meandering Road / River in warm gold -->
+    <path d="M48,51 C46,60 55,67 51,77 C48,84 38,91 33,96" fill="none" stroke="url(#goldGradientWhiteBg)" stroke-width="2.5" stroke-linecap="round" />
+    <path d="M54,51 C52,60 62,67 58,78 C55,85 45,93 42,97" fill="none" stroke="url(#goldGradientLightWhiteBg)" stroke-width="2" stroke-linecap="round" />
+
+    <!-- Dramatic Elliptical 'O' Geometry in rich gold -->
+    <path d="M50,18 C33,18 22,32 22,50 C22,68 33,82 50,82 C67,82 78,68 78,50 C78,32 67,18 50,18 Z" 
+          fill="none" stroke="url(#goldGradientWhiteBg)" stroke-width="3.5" stroke-linecap="round" />
+  </g>
+
+  <!-- Typography (Right) for dark backgrounds -->
+  <g transform="translate(130, 20)">
+    <!-- Primary Brand Wordmark: ODYSSEY in gold -->
+    <text x="0" y="44" 
+          font-family="'Plus Jakarta Sans', 'Cinzel', -apple-system, sans-serif" 
+          font-size="44" 
+          font-weight="800" 
+          letter-spacing="0.16em" 
+          fill="url(#goldGradientWhiteBg)">ODYSSEY</text>
+    
+    <!-- Subtitle: TRAVELS & EXPEDITIONS -->
+    <text x="3" y="66" 
+          font-family="'Plus Jakarta Sans', -apple-system, sans-serif" 
+          font-size="11.5" 
+          font-weight="700" 
+          letter-spacing="0.32em" 
+          fill="#E5E7EB">TRAVELS &amp; EXPEDITIONS</text>
+    
+    <!-- Subtitle secondary: CURATED JOURNEY CO. -->
+    <text x="28" y="80" 
+          font-family="'Plus Jakarta Sans', -apple-system, sans-serif" 
+          font-size="8.5" 
+          font-weight="600" 
+          letter-spacing="0.25em" 
+          fill="#9CA3AF">CURATED JOURNEY CO.</text>
+  </g>
+</svg>
