@@ -2501,3 +2501,306 @@ img {
   }
 }
 
+/* ==========================================================================
+   AIRPLANE WINDOW GALLERY COMPONENT STYLES (Pure Normal CSS)
+   ========================================================================== */
+.airplane-gallery-wrap {
+  margin: 3.5rem auto 2.5rem;
+  max-width: 860px;
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 1.5rem;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+[data-slot="airplane-window-gallery"] {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: 28px;
+  background: linear-gradient(180deg, #182234 0%, #0e1624 50%, #182234 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  margin: 1.5rem auto;
+}
+
+/* Top Cabin Trim */
+[data-slot="airplane-window-gallery"] > div[aria-hidden]:first-of-type {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 10%;
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+[data-slot="airplane-window-gallery"] > div[aria-hidden]:first-of-type > div:first-child {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+[data-slot="airplane-window-gallery"] > div[aria-hidden]:first-of-type > div:last-child {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22%;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+/* Bottom Cabin Trim */
+[data-slot="airplane-window-gallery"] > div[aria-hidden]:nth-of-type(2) {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 8%;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+}
+
+/* Main Windows List Container */
+[data-slot="airplane-window-gallery"] div[role="list"] {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 11%;
+  bottom: 8%;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  container-type: size;
+  z-index: 5;
+}
+
+/* Individual Window Item */
+[data-slot="airplane-window-gallery"] div[role="listitem"] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+  width: 36%;
+  max-width: 250px;
+  min-width: 170px;
+}
+
+[data-seat] {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  color: var(--accent-cyan);
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+}
+
+/* Oval Airplane Window Button */
+[data-slot="airplane-window-gallery"] button[data-window] {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 0.72;
+  border-radius: 46% / 34%;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 4px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.65), inset 0 2px 4px rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  overflow: hidden;
+  outline: none;
+  display: block;
+}
+
+[data-slot="airplane-window-gallery"] button[data-window]:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 16px 36px rgba(56, 189, 248, 0.3), 0 0 18px rgba(56, 189, 248, 0.25);
+  border-color: rgba(56, 189, 248, 0.5);
+}
+
+[data-slot="airplane-window-gallery"] button[data-window] > span[aria-hidden]:first-child {
+  position: absolute;
+  inset: 3.5%;
+  border-radius: 45% / 33%;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Window Glass */
+[data-glass] {
+  position: absolute;
+  inset: 7.5%;
+  overflow: hidden;
+  border-radius: 44% / 32%;
+  background: #090e17;
+  box-shadow: inset 0 6px 16px rgba(0, 0, 0, 0.9);
+  z-index: 2;
+}
+
+/* Window View Image */
+[data-view] {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+  width: 135%;
+  max-width: none;
+  object-fit: cover;
+  transition: opacity 0.5s ease;
+  display: block;
+}
+
+/* Glass Reflection Layer */
+[data-glass] > span[aria-hidden]:nth-of-type(1) {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(0, 0, 0, 0.35) 100%);
+  z-index: 3;
+}
+
+/* Window Shade */
+[data-shade] {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 100%;
+  z-index: 4;
+}
+
+[data-shade] > span:first-child {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #334155 0%, #1e293b 70%, #0f172a 100%);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.15);
+}
+
+/* Shade Grip Handle */
+[data-shade] > span:last-child {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 9%;
+  background: linear-gradient(180deg, #475569 0%, #1e293b 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-shade] > span:last-child > span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 26%;
+  height: 34%;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* Destination Name & Location under Window */
+[data-place] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 42px;
+  margin-top: 4px;
+}
+
+[data-place] span:first-child {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+[data-place] span:last-child {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* Full-bleed Lookout View Stage (When Clicked) */
+[data-lookout] {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  cursor: zoom-out;
+  outline: none;
+  background: #000;
+}
+
+[data-vista-mask] {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+[data-vista] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+}
+
+[data-vista-caption] {
+  pointer-events: none;
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(10, 14, 23, 0.95) 0%, rgba(10, 14, 23, 0.6) 50%, transparent 100%);
+  padding: 6% 6% 4% 6%;
+  color: #fff;
+  text-align: left;
+}
+
+[data-sit-back] {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  padding: 8px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 50;
+}
+
+[data-sit-back]:hover {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: var(--accent-cyan);
+  transform: scale(1.05);
+}
+
